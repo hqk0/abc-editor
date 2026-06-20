@@ -1204,12 +1204,329 @@ function setupThemeToggler() {
   }
 }
 
+// ==========================================================================
+// 14. Virtual Piano & Input Assistant
+// ==========================================================================
+let pianoOctave = 3; // Default starting octave (C3)
+let audioCtx = null;
+const activeOscillators = {};
+const activeKeys = new Set();
+
+const midiToAbcTable = {
+  36: "C,,", 37: "^C,,", 38: "D,,", 39: "^D,,", 40: "E,,", 41: "F,,", 42: "^F,,", 43: "G,,", 44: "^G,,", 45: "A,,", 46: "^A,,", 47: "B,,",
+  48: "C,", 49: "^C,", 50: "D,", 51: "^D,", 52: "E,", 53: "F,", 54: "^F,", 55: "G,", 56: "^G,", 57: "A,", 58: "^A,", 59: "B,",
+  60: "C", 61: "^C", 62: "D", 63: "^D", 64: "E", 65: "F", 66: "^F", 67: "G", 68: "^G", 69: "A", 70: "^A", 71: "B",
+  72: "c", 73: "^c", 74: "d", 75: "^d", 76: "e", 77: "f", 78: "^f", 79: "g", 80: "^g", 81: "a", 82: "^a", 83: "b",
+  84: "c'", 85: "^c'", 86: "d'", 87: "^d'", 88: "e'", 89: "f'", 90: "^f'", 91: "g'", 92: "^g'", 93: "a'", 94: "^a'", 95: "b'",
+  96: "c''"
+};
+
+function initAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function midiToFreq(midi) {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+function playSynthNote(freq, midi) {
+  initAudioContext();
+  stopSynthNote(midi);
+  
+  const osc = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  
+  gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+  gainNode.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 1.0);
+  
+  osc.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 1.0);
+  
+  activeOscillators[midi] = { osc, gainNode };
+}
+
+function stopSynthNote(midi) {
+  const active = activeOscillators[midi];
+  if (active) {
+    try {
+      const now = audioCtx.currentTime;
+      active.gainNode.gain.cancelScheduledValues(now);
+      active.gainNode.gain.setValueAtTime(active.gainNode.gain.value, now);
+      active.gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      
+      const oscToStop = active.osc;
+      const gainToStop = active.gainNode;
+      setTimeout(() => {
+        try {
+          oscToStop.stop();
+          oscToStop.disconnect();
+          gainToStop.disconnect();
+        } catch (e) {}
+      }, 50);
+    } catch (e) {}
+    delete activeOscillators[midi];
+  }
+}
+
+function getNoteLabel(midi) {
+  const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const octave = Math.floor(midi / 12) - 1;
+  const noteName = notes[midi % 12];
+  if (midi % 12 === 0) {
+    return noteName + octave;
+  }
+  return "";
+}
+
+function insertNoteToEditor(abcNote) {
+  if (!editorInstance) return;
+  const selection = editorInstance.getSelection();
+  const range = new monaco.Range(
+    selection.startLineNumber,
+    selection.startColumn,
+    selection.endLineNumber,
+    selection.endColumn
+  );
+  const id = { major: 1, minor: 1 };
+  const text = abcNote + " ";
+  const op = { identifier: id, range: range, text: text, forceMoveMarkers: true };
+  editorInstance.executeEdits("keyboard-insert", [op]);
+  editorInstance.focus();
+}
+
+function onKeyPress(midi) {
+  const keyEl = document.querySelector(`.piano-keyboard [data-midi="${midi}"]`);
+  if (keyEl) {
+    keyEl.classList.add("key-active");
+  }
+  
+  const freq = midiToFreq(midi);
+  playSynthNote(freq, midi);
+  
+  const chkInsert = document.getElementById("chk-piano-insert");
+  if (chkInsert && chkInsert.checked) {
+    const abcNote = midiToAbcTable[midi];
+    if (abcNote) {
+      insertNoteToEditor(abcNote);
+    }
+  }
+}
+
+function onKeyRelease(midi) {
+  const keyEl = document.querySelector(`.piano-keyboard [data-midi="${midi}"]`);
+  if (keyEl) {
+    keyEl.classList.remove("key-active");
+  }
+  stopSynthNote(midi);
+}
+
+function renderPianoKeyboard() {
+  const container = document.getElementById("piano-keyboard");
+  if (!container) return;
+  container.innerHTML = "";
+  
+  const startMidi = (pianoOctave * 12) + 12; // e.g. pianoOctave=3 => 48 (C3)
+  const endMidi = startMidi + 36; // 3 octaves => 84 (C6)
+  
+  for (let midi = startMidi; midi <= endMidi; midi++) {
+    const noteInOctave = midi % 12;
+    const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(noteInOctave);
+    
+    if (isWhite) {
+      const whiteKey = document.createElement("div");
+      whiteKey.className = "white-key";
+      whiteKey.dataset.midi = midi;
+      
+      const label = document.createElement("span");
+      label.className = "key-label";
+      label.innerText = getNoteLabel(midi);
+      whiteKey.appendChild(label);
+      
+      const nextMidi = midi + 1;
+      const nextNoteInOctave = nextMidi % 12;
+      const hasBlack = [1, 3, 6, 8, 10].includes(nextNoteInOctave) && (nextMidi <= endMidi);
+      
+      if (hasBlack) {
+        const blackKey = document.createElement("div");
+        blackKey.className = "black-key";
+        blackKey.dataset.midi = nextMidi;
+        
+        blackKey.addEventListener("mousedown", (e) => {
+          e.stopPropagation();
+          onKeyPress(nextMidi);
+        });
+        blackKey.addEventListener("mouseup", (e) => {
+          e.stopPropagation();
+          onKeyRelease(nextMidi);
+        });
+        blackKey.addEventListener("mouseleave", (e) => {
+          e.stopPropagation();
+          onKeyRelease(nextMidi);
+        });
+        
+        whiteKey.appendChild(blackKey);
+      }
+      
+      whiteKey.addEventListener("mousedown", (e) => {
+        onKeyPress(midi);
+      });
+      whiteKey.addEventListener("mouseup", (e) => {
+        onKeyRelease(midi);
+      });
+      whiteKey.addEventListener("mouseleave", (e) => {
+        onKeyRelease(midi);
+      });
+      
+      whiteKey.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        onKeyPress(midi);
+      }, { passive: false });
+      whiteKey.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        onKeyRelease(midi);
+      }, { passive: false });
+      
+      container.appendChild(whiteKey);
+    }
+  }
+}
+
+function mapKeyToMidi(code) {
+  const keyMap = {
+    "KeyA": 0, "KeyS": 2, "KeyD": 4, "KeyF": 5, "KeyG": 7, "KeyH": 9, "KeyJ": 11,
+    "KeyK": 12, "KeyL": 14, "Semicolon": 16, "Quote": 17,
+    "KeyW": 1, "KeyE": 3, "KeyT": 6, "KeyY": 8, "KeyU": 10, "KeyO": 13, "KeyP": 15
+  };
+  
+  if (code in keyMap) {
+    const base = (pianoOctave + 1) * 12;
+    return base + keyMap[code];
+  }
+  return null;
+}
+
+function setupPianoKeyboard() {
+  renderPianoKeyboard();
+  
+  // PC Key listeners
+  window.addEventListener("keydown", (e) => {
+    const pianoPanel = document.getElementById("piano-panel");
+    if (!pianoPanel || pianoPanel.classList.contains("collapsed")) return;
+    
+    const chkPcKeyboard = document.getElementById("chk-pc-keyboard");
+    if (!chkPcKeyboard || !chkPcKeyboard.checked) return;
+    
+    // Ignore when typing in inputs/Monaco
+    const activeEl = document.activeElement;
+    const isEditing = activeEl && (
+      activeEl.tagName === "INPUT" || 
+      activeEl.tagName === "TEXTAREA" || 
+      activeEl.classList.contains("inputarea")
+    );
+    if (isEditing) return;
+    
+    if (e.repeat) return;
+    
+    const midi = mapKeyToMidi(e.code);
+    if (midi !== null) {
+      e.preventDefault();
+      onKeyPress(midi);
+      activeKeys.add(e.code);
+    }
+  });
+  
+  window.addEventListener("keyup", (e) => {
+    if (activeKeys.has(e.code)) {
+      const midi = mapKeyToMidi(e.code);
+      if (midi !== null) {
+        onKeyRelease(midi);
+      }
+      activeKeys.delete(e.code);
+    }
+  });
+  
+  // Toggle Panel buttons
+  const toggleBtn = document.getElementById("btn-toggle-piano");
+  const closeBtn = document.getElementById("btn-close-piano");
+  const pianoPanel = document.getElementById("piano-panel");
+  
+  if (toggleBtn && pianoPanel) {
+    toggleBtn.addEventListener("click", () => {
+      const isCollapsed = pianoPanel.classList.toggle("collapsed");
+      toggleBtn.classList.toggle("btn-active", !isCollapsed);
+      toggleBtn.innerText = isCollapsed ? "ピアノを表示" : "ピアノを隠す";
+      if (!isCollapsed) {
+        initAudioContext();
+        // Recalculate Monaco editor size since workspace shrunk
+        setTimeout(() => {
+          if (editorInstance) editorInstance.layout();
+        }, 350);
+      } else {
+        setTimeout(() => {
+          if (editorInstance) editorInstance.layout();
+        }, 350);
+      }
+    });
+  }
+  
+  if (closeBtn && pianoPanel && toggleBtn) {
+    closeBtn.addEventListener("click", () => {
+      pianoPanel.classList.add("collapsed");
+      toggleBtn.classList.remove("btn-active");
+      toggleBtn.innerText = "ピアノを表示";
+      setTimeout(() => {
+        if (editorInstance) editorInstance.layout();
+      }, 350);
+    });
+  }
+  
+  // Octave shifter
+  const octDown = document.getElementById("btn-piano-octave-down");
+  const octUp = document.getElementById("btn-piano-octave-up");
+  const octDisplay = document.getElementById("piano-octave-display");
+  
+  if (octDown) {
+    octDown.addEventListener("click", () => {
+      if (pianoOctave > 1) {
+        pianoOctave--;
+        octDisplay.innerText = `C${pianoOctave} - C${pianoOctave + 3}`;
+        renderPianoKeyboard();
+      }
+    });
+  }
+  
+  if (octUp) {
+    octUp.addEventListener("click", () => {
+      if (pianoOctave < 5) {
+        pianoOctave++;
+        octDisplay.innerText = `C${pianoOctave} - C${pianoOctave + 3}`;
+        renderPianoKeyboard();
+      }
+    });
+  }
+}
+
 window.addEventListener('load', () => {
   // A. Initialize Theme
   setupThemeToggler();
 
   // B. Load LocalStorage Data
   loadStorageData();
+  
+  // B2. Initialize Virtual Piano
+  setupPianoKeyboard();
   
   // Set active file header name
   document.getElementById("active-file-name").innerText = files[activeFileId].name;

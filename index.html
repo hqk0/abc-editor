@@ -228,6 +228,48 @@
         </section>
       </div>
 
+      <!-- Piano Keyboard Panel -->
+      <div id="piano-panel" class="piano-panel collapsed">
+        <div class="piano-header">
+          <div class="piano-title">
+            <svg class="piano-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px; color: var(--accent-secondary);">
+              <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
+              <line x1="6" y1="3" x2="6" y2="21"></line>
+              <line x1="10" y1="3" x2="10" y2="21"></line>
+              <line x1="14" y1="3" x2="14" y2="21"></line>
+              <line x1="18" y1="3" x2="18" y2="21"></line>
+            </svg>
+            <span>ミニピアノ・入力アシスト</span>
+          </div>
+          <div class="piano-options">
+            <label class="toggle-switch" title="押した音符をエディターのカーソル位置に入力します">
+              <input type="checkbox" id="chk-piano-insert" checked>
+              <span class="slider round"></span>
+              <span class="toggle-label">楽譜に入力</span>
+            </label>
+            <label class="toggle-switch" title="PCのキーボードでピアノを演奏します (A-S-D.../Q-W-E...)">
+              <input type="checkbox" id="chk-pc-keyboard">
+              <span class="slider round"></span>
+              <span class="toggle-label">PCキーで演奏</span>
+            </label>
+            
+            <div class="piano-octave-control">
+              <button id="btn-piano-octave-down" class="octave-btn" title="オクターブ下げる">-</button>
+              <span id="piano-octave-display" class="octave-display">C3 - C6</span>
+              <button id="btn-piano-octave-up" class="octave-btn" title="オクターブ上げる">+</button>
+            </div>
+            
+            <button id="btn-close-piano" class="close-btn" title="ピアノを閉じる">&times;</button>
+          </div>
+        </div>
+        <div class="piano-keyboard-wrapper">
+          <div id="piano-keyboard" class="piano-keyboard"></div>
+        </div>
+        <div class="piano-footer">
+          <span class="piano-help-text">【PCキーの割り当て】 白鍵: A(C) S(D) D(E) F(F) G(G) H(A) J(B) K(c) L(d) ;(e) :(f) | 黒鍵: W(C#) E(D#) T(F#) Y(G#) U(A#) O(c#) P(d#)</span>
+        </div>
+      </div>
+
       <!-- Playback Console (Bottom) -->
       <footer class="playback-bar">
         <div class="now-playing">
@@ -244,6 +286,9 @@
         </div>
 
         <div class="playback-extra">
+          <button id="btn-toggle-piano" class="action-btn-styled" title="ミニピアノを開く/閉じる">
+            ピアノを表示
+          </button>
         </div>
       </footer>
     </div>

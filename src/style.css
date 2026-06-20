@@ -191,7 +191,6 @@ body {
 .workspace-container {
   display: flex;
   flex: 1;
-  height: calc(100vh - var(--header-height) - var(--footer-height));
   overflow: hidden;
   position: relative;
 }
@@ -1414,4 +1413,261 @@ body.light-theme .icon-btn:hover {
 
 body.light-theme .btn-primary {
   color: #ffffff; /* keep text white on primary gradients */
+}
+
+/* ==========================================================================
+   Piano Keyboard Panel Styling
+   ========================================================================== */
+.piano-panel {
+  background-color: var(--bg-sidebar);
+  border-top: 1px solid var(--border-color);
+  height: 245px;
+  display: flex;
+  flex-direction: column;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  flex-shrink: 0;
+  z-index: 40;
+  overflow: hidden;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.piano-panel.collapsed {
+  height: 0;
+  border-top: 0 solid transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.piano-header {
+  height: 42px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.piano-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.piano-options {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Octave Controls */
+.piano-octave-control {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.octave-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  width: 28px;
+  height: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.octave-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-primary);
+}
+
+.octave-display {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 0 10px;
+  color: var(--text-muted);
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  min-width: 60px;
+  text-align: center;
+}
+
+.piano-options .close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.piano-options .close-btn:hover {
+  color: var(--color-danger);
+}
+
+/* Keyboard Styling */
+.piano-keyboard-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  overflow-x: auto;
+  background-color: var(--bg-panel);
+}
+
+.piano-keyboard {
+  display: flex;
+  position: relative;
+  height: 135px;
+  padding-bottom: 2px;
+}
+
+/* Keys */
+.white-key {
+  position: relative;
+  width: 32px;
+  height: 100%;
+  background: linear-gradient(to bottom, #ffffff 0%, #f1f5f9 100%);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-right: none;
+  border-radius: 0 0 4px 4px;
+  cursor: pointer;
+  z-index: 10;
+  flex-shrink: 0;
+  box-shadow: 0 3px 3px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.white-key:last-child {
+  border-right: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.white-key:hover {
+  background: linear-gradient(to bottom, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.white-key .key-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #64748b;
+  pointer-events: none;
+  user-select: none;
+}
+
+.black-key {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 60%;
+  background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 0 0 3px 3px;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+  transition: background 0.1s;
+}
+
+.black-key:hover {
+  background: linear-gradient(to bottom, #334155 0%, #1e293b 100%);
+}
+
+/* Active keys (Glow Effect) */
+.white-key.key-active {
+  background: linear-gradient(to bottom, var(--accent-primary) 0%, #4f46e5 100%);
+  border-color: transparent;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.2), 0 0 8px rgba(99, 102, 241, 0.6);
+}
+
+.white-key.key-active .key-label {
+  color: #ffffff;
+}
+
+.black-key.key-active {
+  background: linear-gradient(to bottom, #818cf8 0%, var(--accent-primary) 100%);
+  border-color: transparent;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 0 8px rgba(99, 102, 241, 0.6);
+}
+
+/* Footer Help text */
+.piano-footer {
+  height: 28px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--border-color);
+  background: rgba(0,0,0,0.1);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+}
+
+/* Light Theme overrides for virtual piano */
+body.light-theme .piano-panel {
+  background-color: #f1f5f9;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .piano-header {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+body.light-theme .piano-octave-control {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme .piano-keyboard-wrapper {
+  background-color: #f8fafc;
+}
+
+body.light-theme .white-key {
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+  border-color: #cbd5e1;
+}
+
+body.light-theme .white-key:hover {
+  background: linear-gradient(to bottom, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+body.light-theme .white-key:last-child {
+  border-right-color: #cbd5e1;
+}
+
+body.light-theme .black-key {
+  background: linear-gradient(to bottom, #334155 0%, #0f172a 100%);
+}
+
+body.light-theme .white-key.key-active {
+  background: linear-gradient(to bottom, var(--accent-primary) 0%, #4f46e5 100%);
+}
+
+body.light-theme .white-key.key-active .key-label {
+  color: #ffffff;
+}
+
+body.light-theme .black-key.key-active {
+  background: linear-gradient(to bottom, #818cf8 0%, var(--accent-primary) 100%);
 }
