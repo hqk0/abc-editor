@@ -1482,32 +1482,31 @@ function mapKeyToMidi(code) {
     "Semicolon": 15 // D#4 (placed above Period and Slash)
   };
   
-  // Q-row mapping for F-F range (starts at C5 = 72 when pianoOctave=3)
-  // Maps Q to C, W to D, E to E, R to F... up to [ = F6 (MIDI 89)
+  // Q-row mapping for F-F range (starts at B4 = 71 when pianoOctave=3)
+  // Maps Q to B4, W to C5, E to D5... up to ] = F6 (MIDI 89)
   const upperMapF = {
     // White keys
-    "KeyQ": 0,   // C5
-    "KeyW": 2,   // D5
-    "KeyE": 4,   // E5
-    "KeyR": 5,   // F5
-    "KeyT": 7,   // G5
-    "KeyY": 9,   // A5
-    "KeyU": 11,  // B5
-    "KeyI": 12,  // C6
-    "KeyO": 14,  // D6
-    "KeyP": 16,  // E6
-    "BracketLeft": 17, // F6 (Highest key on virtual keyboard)
-    "BracketRight": 19, // G6
+    "KeyQ": 0,   // B4
+    "KeyW": 1,   // C5
+    "KeyE": 3,   // D5
+    "KeyR": 5,   // E5
+    "KeyT": 6,   // F5
+    "KeyY": 8,   // G5
+    "KeyU": 10,  // A5
+    "KeyI": 12,  // B5
+    "KeyO": 13,  // C6
+    "KeyP": 15,  // D6
+    "BracketLeft": 17, // E6
+    "BracketRight": 18, // F6 (Highest key on virtual keyboard)
     
     // Black keys
-    "Digit2": 1, // C#5
-    "Digit3": 3, // D#5
-    "Digit5": 6, // F#5 (placed above R and T)
-    "Digit6": 8, // G#5 (placed above T and Y)
-    "Digit7": 10, // A#5 (placed above Y and U)
-    "Digit9": 13, // C#6 (placed above I and O)
-    "Digit0": 15, // D#6 (placed above O and P)
-    "Equal": 18  // F#6 (placed above [ and ])
+    "Digit2": 2, // C#5 (between W and E)
+    "Digit3": 4, // D#5 (between E and R)
+    "Digit5": 7, // F#5 (between T and Y)
+    "Digit6": 9, // G#5 (between Y and U)
+    "Digit7": 11, // A#5 (between U and I)
+    "Digit9": 14, // C#6 (between O and P)
+    "Digit0": 16  // D#6 (between P and [)
   };
 
   // Q-row mapping for C-C range (starts at F4 = 65 when pianoOctave=3)
@@ -1548,7 +1547,7 @@ function mapKeyToMidi(code) {
   if (code in upperMap) {
     let upperStartMidi;
     if (pianoKeyRange === 'F') {
-      upperStartMidi = (pianoOctave * 12) + 36; // C5 (72 when pianoOctave=3)
+      upperStartMidi = (pianoOctave * 12) + 35; // B4 (71 when pianoOctave=3)
     } else {
       upperStartMidi = (pianoOctave * 12) + 29; // F4 (65 when pianoOctave=3)
     }
