@@ -1434,7 +1434,7 @@ function mapKeyToMidi(code) {
     startMidi = (pianoOctave * 12) + 12; // C3 (pianoOctave=3 => 48)
   }
   
-  // Z-row mapping relative to startMidi for F-F range
+  // Z-row mapping relative to startMidi for F-F range (F3 to A4)
   const lowerMapF = {
     // White keys
     "KeyZ": 0,   // F3
@@ -1458,7 +1458,7 @@ function mapKeyToMidi(code) {
     "Semicolon": 15 // G#4 (placed above Period and Slash)
   };
   
-  // Z-row mapping relative to startMidi for C-C range
+  // Z-row mapping relative to startMidi for C-C range (C3 to E4)
   const lowerMapC = {
     // White keys
     "KeyZ": 0,   // C3
@@ -1482,8 +1482,37 @@ function mapKeyToMidi(code) {
     "Semicolon": 15 // D#4 (placed above Period and Slash)
   };
   
-  // Q-row mapping relative to base F4 pitch (pianoOctave * 12 + 29 => F4 for octave 3)
-  const upperMap = {
+  // Q-row mapping for F-F range (starts at C5 = 72 when pianoOctave=3)
+  // Maps Q to C, W to D, E to E, R to F... up to [ = F6 (MIDI 89)
+  const upperMapF = {
+    // White keys
+    "KeyQ": 0,   // C5
+    "KeyW": 2,   // D5
+    "KeyE": 4,   // E5
+    "KeyR": 5,   // F5
+    "KeyT": 7,   // G5
+    "KeyY": 9,   // A5
+    "KeyU": 11,  // B5
+    "KeyI": 12,  // C6
+    "KeyO": 14,  // D6
+    "KeyP": 16,  // E6
+    "BracketLeft": 17, // F6 (Highest key on virtual keyboard)
+    "BracketRight": 19, // G6
+    
+    // Black keys
+    "Digit2": 1, // C#5
+    "Digit3": 3, // D#5
+    "Digit5": 6, // F#5 (placed above R and T)
+    "Digit6": 8, // G#5 (placed above T and Y)
+    "Digit7": 10, // A#5 (placed above Y and U)
+    "Digit9": 13, // C#6 (placed above I and O)
+    "Digit0": 15, // D#6 (placed above O and P)
+    "Equal": 18  // F#6 (placed above [ and ])
+  };
+
+  // Q-row mapping for C-C range (starts at F4 = 65 when pianoOctave=3)
+  // Maps Q to F, W to G, E to A, R to B... up to ] = C6 (MIDI 84)
+  const upperMapC = {
     // White keys
     "KeyQ": 0,   // F4
     "KeyW": 2,   // G4
@@ -1510,17 +1539,16 @@ function mapKeyToMidi(code) {
   };
   
   const lowerMap = pianoKeyRange === 'F' ? lowerMapF : lowerMapC;
+  const upperMap = pianoKeyRange === 'F' ? upperMapF : upperMapC;
   
   if (code in lowerMap) {
     return startMidi + lowerMap[code];
   }
   
   if (code in upperMap) {
-    // If F-F range, upper row Q starts at F5 (MIDI 77 for octave 3) to reach high notes.
-    // If C-C range, upper row Q starts at F4 (MIDI 65 for octave 3).
     let upperStartMidi;
     if (pianoKeyRange === 'F') {
-      upperStartMidi = (pianoOctave * 12) + 41; // F5 (77 when pianoOctave=3)
+      upperStartMidi = (pianoOctave * 12) + 36; // C5 (72 when pianoOctave=3)
     } else {
       upperStartMidi = (pianoOctave * 12) + 29; // F4 (65 when pianoOctave=3)
     }
