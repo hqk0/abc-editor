@@ -1154,7 +1154,16 @@ function setupSidebarToggle() {
 // 13. DOM & Monaco Editor Initialization (Fully Local Setup)
 // ==========================================================================
 function setupThemeToggler() {
-  const isLight = localStorage.getItem('abc_editor_light_theme') === 'true';
+  let isLight = false;
+  const storedTheme = localStorage.getItem('abc_editor_light_theme');
+  
+  if (storedTheme !== null) {
+    isLight = storedTheme === 'true';
+  } else {
+    // Detect system theme if no user preference is stored
+    isLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  }
+  
   if (isLight) {
     document.body.classList.add('light-theme');
   } else {
