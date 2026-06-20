@@ -42,10 +42,10 @@ M: 4/4
 L: 1/4
 Q: 1/4=120
 K: G
-B B C D | D C B A | G G A B | B > A A2 |
-B B C D | D C B A | G G A B | A > G G2 |
-A A B G | A B/C/ B G | A B/C/ B A | G A D2 |
-B B C D | D C B A | G G A B | A > G G2 |]`,
+B B C' D' | D' C' B A | G G A B | B > A A2 |
+B B C' D' | D' C' B A | G G A B | A > G G2 |
+A A B G | A B/C'/ B G | A B/C'/ B A | G A D2 |
+B B C' D' | D' C' B A | G G A B | A > G G2 |]`,
 
   'cooleys-reel': `X: 2
 T: Cooley's Reel
@@ -268,6 +268,13 @@ function loadStorageData() {
   
   if (storedFiles) {
     files = JSON.parse(storedFiles);
+    // Migrate: Update "Ode to Joy" if it still has the old pitch format (B B C D)
+    if (files['ode-to-joy'] && typeof files['ode-to-joy'].content === 'string') {
+      if (files['ode-to-joy'].content.includes("B B C D | D C B A")) {
+        files['ode-to-joy'].content = templates['ode-to-joy'];
+        localStorage.setItem('abc_editor_scores', JSON.stringify(files));
+      }
+    }
   } else {
     files = { ...initialFiles };
     localStorage.setItem('abc_editor_scores', JSON.stringify(files));
