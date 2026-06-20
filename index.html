@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ABC Editor</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Top Navigation Header -->
+      <header class="app-header">
+        <div class="header-logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+          <span class="logo-text">ABC Editor</span>
+        </div>
+        
+        <div class="active-file-header">
+          <span id="active-file-name">Untitled.abc</span>
+          <span class="save-indicator" id="save-indicator">
+            <span class="dot"></span>
+            <span class="text">Saved</span>
+          </span>
+        </div>
+
+        <div class="header-actions">
+          <button id="btn-toggle-theme" class="icon-btn" title="ライト/ダークモード切り替え" style="margin-right: 8px;">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+          <button id="btn-toggle-sidebar" class="icon-btn" title="ワークスペースの切り替え">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Workspace Container -->
+      <div class="workspace-container">
+        <!-- Sidebar Workspace (Left) -->
+        <aside id="sidebar" class="sidebar">
+          <!-- Workspace Accordion Tabs -->
+          <div class="sidebar-section">
+            <div class="sidebar-section-header">
+              <span>スコア管理</span>
+              <div style="display: flex; gap: 6px;">
+                <button id="btn-import-abc" class="action-btn" title="ABCファイルをインポート">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 12px; height: 12px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </button>
+                <button id="btn-new-score" class="action-btn" title="新規スコアを作成">+</button>
+              </div>
+            </div>
+            <div class="sidebar-section-content">
+              <div id="score-list" class="score-list">
+                <!-- Scores dynamic insertion -->
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="sidebar-section-header collapsible">
+              <span>ABC記譜法サンプル</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div class="sidebar-section-content examples-content">
+              <button class="example-item" data-template="ode-to-joy">歓喜の歌 (ベートーヴェン)</button>
+              <button class="example-item" data-template="cooleys-reel">Cooley's Reel (アイルランド民謡)</button>
+              <button class="example-item" data-template="twinkle">きらきら星</button>
+              <button class="example-item" data-template="major-scale">ハ長調音階 (C Major Scale)</button>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="sidebar-section-header collapsible">
+              <span>ABC記譜法クイックヘルプ</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div class="sidebar-section-content help-content">
+              <div class="help-section">
+                <h4>1. ヘッダー情報 (必須)</h4>
+                <ul>
+                  <li><code>X: 1</code> 参照番号 (必須、最初)</li>
+                  <li><code>T: Title</code> 曲名</li>
+                  <li><code>M: 4/4</code> 拍子 (4/4, 3/4, 6/8 など)</li>
+                  <li><code>L: 1/8</code> 音符の基準長 (1/8=8分音符)</li>
+                  <li><code>Q: 1/4=120</code> テンポ (BPM)</li>
+                  <li><code>K: C</code> 調 (C, G, D, Amin, Ddor など)</li>
+                </ul>
+              </div>
+              <div class="help-section">
+                <h4>2. 音高の書き方</h4>
+                <ul>
+                  <li>中央ハ(C): <code>C D E F G A B</code></li>
+                  <li>高音オクターブ: <code>c d e f g a b</code></li>
+                  <li>さらに高音: <code>c' d' e' f' g' a' b'</code></li>
+                  <li>低音オクターブ: <code>C, D, E, F, G, A, B,</code></li>
+                  <li>シャープ: <code>^C</code> | フラット: <code>_B</code></li>
+                  <li>ナチュラル: <code>=F</code> | 休符: <code>z</code></li>
+                </ul>
+              </div>
+              <div class="help-section">
+                <h4>3. 音の長さ</h4>
+                <ul>
+                  <li>基準の長さ (<code>L:</code>指定): <code>C</code></li>
+                  <li>2倍の長さ: <code>C2</code> | 4倍: <code>C4</code></li>
+                  <li>半分の長さ: <code>C/2</code> または <code>C/</code></li>
+                  <li>1/4の長さ: <code>C/4</code></li>
+                  <li>付点付き: <code>C>D</code> (Cは1.5倍、Dは0.5倍)</li>
+                </ul>
+              </div>
+              <div class="help-section">
+                <h4>4. 小節線とリピート</h4>
+                <ul>
+                  <li>小節線: <code>|</code> | 終止線: <code>|]</code></li>
+                  <li>複縦線: <code>||</code> | ダブルバー: <code>[|</code></li>
+                  <li>リピート開始: <code>|:</code> | 終了: <code>:|</code></li>
+                  <li>リピート結合: <code>::</code></li>
+                  <li>1番・2番括弧: <code>[1 C D E :|[2 E F G</code></li>
+                </ul>
+              </div>
+              <div class="help-section">
+                <h4>5. 和音とタイ</h4>
+                <ul>
+                  <li>和音: <code>[CEG]</code> (括弧で囲む)</li>
+                  <li>タイ(つなぐ): <code>C-C</code></li>
+                  <li>スラー(滑らかに): <code>(C D E)</code></li>
+                  <li>装飾音符: <code>{d}c</code> または <code>{cde}f</code></li>
+                  <li>コードネーム: <code>"C" E G</code> (音の前にダブルクォーテーション)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Editor Panel (Middle) -->
+        <main class="main-panel editor-panel">
+          <div class="panel-header">
+            <span class="panel-title">エディター (ABC記譜法)</span>
+            <div class="editor-shortcuts-hint">Ctrl+S / ⌘S で強制保存</div>
+          </div>
+          <div class="editor-viewport">
+            <div id="monaco-editor-container"></div>
+          </div>
+          <div class="panel-footer status-bar">
+            <div class="status-left">
+              <span id="line-col-status">Ln 1, Col 1</span>
+            </div>
+            <div class="status-right">
+              <span id="editor-language-mode">abc notation</span>
+            </div>
+          </div>
+        </main>
+
+        <!-- Preview Panel (Right) -->
+        <section class="main-panel preview-panel">
+          <div class="panel-header preview-header">
+            <span class="panel-title">楽譜プレビュー</span>
+            
+            <div class="preview-toolbar">
+              <!-- Dark Score Toggle -->
+              <label class="toggle-switch" title="楽譜のダークモード切替">
+                <input type="checkbox" id="chk-dark-score">
+                <span class="slider round"></span>
+                <span class="toggle-label">ダーク楽譜</span>
+              </label>
+
+              <!-- Zoom Control -->
+              <div class="zoom-control">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="zoom-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                <input type="range" id="zoom-range" min="50" max="150" value="100" title="ズーム">
+                <span id="zoom-value">100%</span>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="btn-group">
+                <button id="btn-copy-abc" class="action-btn-styled" title="ABC記譜法をコピー">
+                  コピー
+                </button>
+                <button id="btn-download-abc" class="action-btn-styled" title="ABCファイル (.abc) を保存">
+                  ABC保存
+                </button>
+                <button id="btn-download-midi" class="action-btn-styled" title="MIDIファイルを保存">
+                  MIDI出力
+                </button>
+                <button id="btn-print-pdf" class="action-btn-styled" title="楽譜を印刷 / PDF保存">
+                  印刷/PDF
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="preview-viewport">
+            <div id="notation-paper-container">
+              <div id="notation-paper"></div>
+            </div>
+            
+            <!-- Warning / Error Card -->
+            <div id="compilation-warnings" class="compilation-warnings hidden">
+              <div class="warnings-header">
+                <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span id="warning-count-text">警告があります</span>
+              </div>
+              <ul id="warnings-list" class="warnings-list"></ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Playback Console (Bottom) -->
+      <footer class="playback-bar">
+        <div class="now-playing">
+          <svg class="music-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          <div class="now-playing-info">
+            <div id="playback-tune-title" class="tune-title">選択されていません</div>
+            <div class="playback-status" id="playback-status">オーディオ準備中...</div>
+          </div>
+        </div>
+
+        <!-- Styled ABCJS Audio Control Container -->
+        <div class="playback-controls-container">
+          <div id="audio-controls-panel"></div>
+        </div>
+
+        <div class="playback-extra">
+        </div>
+      </footer>
+    </div>
+
+    <!-- Hidden printing container -->
+    <div id="print-section"></div>
+
+    <!-- Hidden file input for importing ABC files -->
+    <input type="file" id="import-abc-file" accept=".abc" style="display: none;">
+
+    <!-- Script entry point -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
