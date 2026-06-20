@@ -1426,11 +1426,41 @@ function renderPianoKeyboard() {
 }
 
 function mapKeyToMidi(code) {
-  const startMidi = (pianoOctave * 12) + 12; // C3 (pianoOctave=3のとき 48)
+  // Determine startMidi for lower row depending on key range
+  let startMidi;
+  if (pianoKeyRange === 'F') {
+    startMidi = (pianoOctave * 12) + 17; // F3 (pianoOctave=3 => 53)
+  } else {
+    startMidi = (pianoOctave * 12) + 12; // C3 (pianoOctave=3 => 48)
+  }
   
-  // Zから始まる下段キーマップ (Cからの相対値)
-  const lowerMap = {
-    // 白鍵
+  // Z-row mapping relative to startMidi for F-F range
+  const lowerMapF = {
+    // White keys
+    "KeyZ": 0,   // F3
+    "KeyX": 2,   // G3
+    "KeyC": 4,   // A3
+    "KeyV": 6,   // B3
+    "KeyB": 7,   // C4
+    "KeyN": 9,   // D4
+    "KeyM": 11,  // E4
+    "Comma": 12, // F4
+    "Period": 14, // G4
+    "Slash": 16, // A4
+    
+    // Black keys
+    "KeyS": 1,   // F#3
+    "KeyD": 3,   // G#3
+    "KeyF": 5,   // A#3 (placed above C and V)
+    "KeyH": 8,   // C#4 (placed above B and N)
+    "KeyJ": 10,  // D#4 (placed above N and M)
+    "KeyL": 13,  // F#4 (placed above Comma and Period)
+    "Semicolon": 15 // G#4 (placed above Period and Slash)
+  };
+  
+  // Z-row mapping relative to startMidi for C-C range
+  const lowerMapC = {
+    // White keys
     "KeyZ": 0,   // C3
     "KeyX": 2,   // D3
     "KeyC": 4,   // E3
@@ -1442,19 +1472,19 @@ function mapKeyToMidi(code) {
     "Period": 14, // D4
     "Slash": 16, // E4
     
-    // 黒鍵
+    // Black keys
     "KeyS": 1,   // C#3
     "KeyD": 3,   // D#3
-    "KeyG": 6,   // F#3
-    "KeyH": 8,   // G#3
-    "KeyJ": 10,  // A#3
-    "KeyL": 13,  // C#4
-    "Semicolon": 15 // D#4
+    "KeyG": 6,   // F#3 (placed above V and B)
+    "KeyH": 8,   // G#3 (placed above B and N)
+    "KeyJ": 10,  // A#3 (placed above N and M)
+    "KeyL": 13,  // C#4 (placed above Comma and Period)
+    "Semicolon": 15 // D#4 (placed above Period and Slash)
   };
   
-  // Qから始まる上段キーマップ (Fからの相対値)
+  // Q-row mapping relative to base F4 pitch (pianoOctave * 12 + 29 => F4 for octave 3)
   const upperMap = {
-    // 白鍵
+    // White keys
     "KeyQ": 0,   // F4
     "KeyW": 2,   // G4
     "KeyE": 4,   // A4
@@ -1468,7 +1498,7 @@ function mapKeyToMidi(code) {
     "BracketLeft": 18, // B5
     "BracketRight": 19, // C6
     
-    // 黒鍵
+    // Black keys
     "Digit2": 1, // F#4
     "Digit3": 3, // G#4
     "Digit4": 5, // A#4
@@ -1479,13 +1509,15 @@ function mapKeyToMidi(code) {
     "Minus": 17  // A#5
   };
   
+  const lowerMap = pianoKeyRange === 'F' ? lowerMapF : lowerMapC;
+  
   if (code in lowerMap) {
     return startMidi + lowerMap[code];
   }
   
   if (code in upperMap) {
-    // 上段のファ (F4) は、下段のド (C3) から見て 17半音上
-    const upperStartMidi = startMidi + 17;
+    // Upper row F4 always maps to (pianoOctave * 12) + 29 (65 when pianoOctave=3)
+    const upperStartMidi = (pianoOctave * 12) + 29;
     return upperStartMidi + upperMap[code];
   }
   
