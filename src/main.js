@@ -1500,13 +1500,13 @@ function mapKeyToMidi(code) {
     "BracketRight": 18, // F6 (Highest key on virtual keyboard)
     
     // Black keys
-    "Digit2": 2, // C#5 (between W and E)
-    "Digit3": 4, // D#5 (between E and R)
-    "Digit5": 7, // F#5 (between T and Y)
-    "Digit6": 9, // G#5 (between Y and U)
-    "Digit7": 11, // A#5 (between U and I)
-    "Digit9": 14, // C#6 (between O and P)
-    "Digit0": 16  // D#6 (between P and [)
+    "Digit3": 2, // C#5 (between W and E)
+    "Digit4": 4, // D#5 (between E and R)
+    "Digit6": 7, // F#5 (between T and Y)
+    "Digit7": 9, // G#5 (between Y and U)
+    "Digit8": 11, // A#5 (between U and I)
+    "Digit0": 14, // C#6 (between O and P)
+    "Minus": 16  // D#6 (between P and [)
   };
 
   // Q-row mapping for C-C range (starts at F4 = 65 when pianoOctave=3)
