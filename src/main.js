@@ -1405,13 +1405,32 @@ function renderPianoKeyboard() {
 
 function mapKeyToMidi(code) {
   const keyMap = {
-    "KeyA": 0, "KeyS": 2, "KeyD": 4, "KeyF": 5, "KeyG": 7, "KeyH": 9, "KeyJ": 11,
-    "KeyK": 12, "KeyL": 14, "Semicolon": 16, "Quote": 17,
-    "KeyW": 1, "KeyE": 3, "KeyT": 6, "KeyY": 8, "KeyU": 10, "KeyO": 13, "KeyP": 15
+    // 白鍵
+    "KeyA": -8,   // E4 (C5 - 8半音)
+    "KeyS": -7,   // F4
+    "KeyD": -5,   // G4
+    "KeyF": -3,   // A4
+    "KeyG": -1,   // B4
+    "KeyH": 0,    // C5 (基準)
+    "KeyJ": 2,    // D5
+    "KeyK": 4,    // E5
+    "KeyL": 5,    // F5
+    "Semicolon": 7, // G5
+    "Quote": 9,   // A5
+    
+    // 黒鍵
+    "KeyW": -6,   // F#4
+    "KeyE": -4,   // G#4
+    "KeyR": -2,   // A#4
+    "KeyY": 1,    // C#5
+    "KeyU": 3,    // D#5
+    "KeyO": 6,    // F#5
+    "KeyP": 8     // G#5
   };
   
   if (code in keyMap) {
-    const base = (pianoOctave + 1) * 12;
+    // base = (pianoOctave + 3) * 12 (pianoOctave=3のとき 72 = C5)
+    const base = (pianoOctave + 3) * 12;
     return base + keyMap[code];
   }
   return null;
