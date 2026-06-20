@@ -1340,6 +1340,8 @@ function renderPianoKeyboard() {
   const startMidi = (pianoOctave * 12) + 12; // e.g. pianoOctave=3 => 48 (C3)
   const endMidi = startMidi + 36; // 3 octaves => 84 (C6)
   
+  let whiteKeyCount = 0;
+  
   for (let midi = startMidi; midi <= endMidi; midi++) {
     const noteInOctave = midi % 12;
     const isWhite = [0, 2, 4, 5, 7, 9, 11].includes(noteInOctave);
@@ -1353,31 +1355,6 @@ function renderPianoKeyboard() {
       label.className = "key-label";
       label.innerText = getNoteLabel(midi);
       whiteKey.appendChild(label);
-      
-      const nextMidi = midi + 1;
-      const nextNoteInOctave = nextMidi % 12;
-      const hasBlack = [1, 3, 6, 8, 10].includes(nextNoteInOctave) && (nextMidi <= endMidi);
-      
-      if (hasBlack) {
-        const blackKey = document.createElement("div");
-        blackKey.className = "black-key";
-        blackKey.dataset.midi = nextMidi;
-        
-        blackKey.addEventListener("mousedown", (e) => {
-          e.stopPropagation();
-          onKeyPress(nextMidi);
-        });
-        blackKey.addEventListener("mouseup", (e) => {
-          e.stopPropagation();
-          onKeyRelease(nextMidi);
-        });
-        blackKey.addEventListener("mouseleave", (e) => {
-          e.stopPropagation();
-          onKeyRelease(nextMidi);
-        });
-        
-        whiteKey.appendChild(blackKey);
-      }
       
       whiteKey.addEventListener("mousedown", (e) => {
         onKeyPress(midi);
@@ -1399,40 +1376,106 @@ function renderPianoKeyboard() {
       }, { passive: false });
       
       container.appendChild(whiteKey);
+      
+      // Determine if a black key should follow this white key
+      const nextMidi = midi + 1;
+      const nextNoteInOctave = nextMidi % 12;
+      const hasBlack = [1, 3, 6, 8, 10].includes(nextNoteInOctave) && (nextMidi <= endMidi);
+      
+      if (hasBlack) {
+        const blackKey = document.createElement("div");
+        blackKey.className = "black-key";
+        blackKey.dataset.midi = nextMidi;
+        
+        // Position absolutely relative to the container based on white key width (32px)
+        const leftPos = (whiteKeyCount + 1) * 32;
+        blackKey.style.left = `${leftPos}px`;
+        
+        blackKey.addEventListener("mousedown", (e) => {
+          e.stopPropagation();
+          onKeyPress(nextMidi);
+        });
+        blackKey.addEventListener("mouseup", (e) => {
+          e.stopPropagation();
+          onKeyRelease(nextMidi);
+        });
+        blackKey.addEventListener("mouseleave", (e) => {
+          e.stopPropagation();
+          onKeyRelease(nextMidi);
+        });
+        
+        container.appendChild(blackKey);
+      }
+      
+      whiteKeyCount++;
     }
   }
 }
 
 function mapKeyToMidi(code) {
-  const keyMap = {
+  const startMidi = (pianoOctave * 12) + 12; // C3 (pianoOctave=3のとき 48)
+  
+  // Zから始まる下段キーマップ (Cからの相対値)
+  const lowerMap = {
     // 白鍵
-    "KeyA": -8,   // E4 (C5 - 8半音)
-    "KeyS": -7,   // F4
-    "KeyD": -5,   // G4
-    "KeyF": -3,   // A4
-    "KeyG": -1,   // B4
-    "KeyH": 0,    // C5 (基準)
-    "KeyJ": 2,    // D5
-    "KeyK": 4,    // E5
-    "KeyL": 5,    // F5
-    "Semicolon": 7, // G5
-    "Quote": 9,   // A5
+    "KeyZ": 0,   // C3
+    "KeyX": 2,   // D3
+    "KeyC": 4,   // E3
+    "KeyV": 5,   // F3
+    "KeyB": 7,   // G3
+    "KeyN": 9,   // A3
+    "KeyM": 11,  // B3
+    "Comma": 12, // C4
+    "Period": 14, // D4
+    "Slash": 16, // E4
     
     // 黒鍵
-    "KeyW": -6,   // F#4
-    "KeyE": -4,   // G#4
-    "KeyR": -2,   // A#4
-    "KeyY": 1,    // C#5
-    "KeyU": 3,    // D#5
-    "KeyO": 6,    // F#5
-    "KeyP": 8     // G#5
+    "KeyS": 1,   // C#3
+    "KeyD": 3,   // D#3
+    "KeyG": 6,   // F#3
+    "KeyH": 8,   // G#3
+    "KeyJ": 10,  // A#3
+    "KeyL": 13,  // C#4
+    "Semicolon": 15 // D#4
   };
   
-  if (code in keyMap) {
-    // base = (pianoOctave + 3) * 12 (pianoOctave=3のとき 72 = C5)
-    const base = (pianoOctave + 3) * 12;
-    return base + keyMap[code];
+  // Qから始まる上段キーマップ (Fからの相対値)
+  const upperMap = {
+    // 白鍵
+    "KeyQ": 0,   // F4
+    "KeyW": 2,   // G4
+    "KeyE": 4,   // A4
+    "KeyR": 6,   // B4
+    "KeyT": 7,   // C5
+    "KeyY": 9,   // D5
+    "KeyU": 11,  // E5
+    "KeyI": 12,  // F5
+    "KeyO": 14,  // G5
+    "KeyP": 16,  // A5
+    "BracketLeft": 18, // B5
+    "BracketRight": 19, // C6
+    
+    // 黒鍵
+    "Digit2": 1, // F#4
+    "Digit3": 3, // G#4
+    "Digit4": 5, // A#4
+    "Digit6": 8, // C#5
+    "Digit7": 10, // D#5
+    "Digit9": 13, // F#5
+    "Digit0": 15, // G#5
+    "Minus": 17  // A#5
+  };
+  
+  if (code in lowerMap) {
+    return startMidi + lowerMap[code];
   }
+  
+  if (code in upperMap) {
+    // 上段のファ (F4) は、下段のド (C3) から見て 17半音上
+    const upperStartMidi = startMidi + 17;
+    return upperStartMidi + upperMap[code];
+  }
+  
   return null;
 }
 
