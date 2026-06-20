@@ -1516,8 +1516,14 @@ function mapKeyToMidi(code) {
   }
   
   if (code in upperMap) {
-    // Upper row F4 always maps to (pianoOctave * 12) + 29 (65 when pianoOctave=3)
-    const upperStartMidi = (pianoOctave * 12) + 29;
+    // If F-F range, upper row Q starts at F5 (MIDI 77 for octave 3) to reach high notes.
+    // If C-C range, upper row Q starts at F4 (MIDI 65 for octave 3).
+    let upperStartMidi;
+    if (pianoKeyRange === 'F') {
+      upperStartMidi = (pianoOctave * 12) + 41; // F5 (77 when pianoOctave=3)
+    } else {
+      upperStartMidi = (pianoOctave * 12) + 29; // F4 (65 when pianoOctave=3)
+    }
     return upperStartMidi + upperMap[code];
   }
   
