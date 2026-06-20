@@ -1208,6 +1208,7 @@ function setupThemeToggler() {
 // 14. Virtual Piano & Input Assistant
 // ==========================================================================
 let pianoOctave = 3; // Default starting octave (C3)
+let pianoKeyRange = 'F'; // Default range type: 'F' (F to F) or 'C' (C to C)
 let audioCtx = null;
 const activeOscillators = {};
 const activeKeys = new Set();
@@ -1284,8 +1285,15 @@ function getNoteLabel(midi) {
   const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const octave = Math.floor(midi / 12) - 1;
   const noteName = notes[midi % 12];
-  if (midi % 12 === 0) {
-    return noteName + octave;
+  
+  if (pianoKeyRange === 'F') {
+    if (midi % 12 === 5) {
+      return noteName + octave;
+    }
+  } else {
+    if (midi % 12 === 0) {
+      return noteName + octave;
+    }
   }
   return "";
 }
@@ -1337,8 +1345,13 @@ function renderPianoKeyboard() {
   if (!container) return;
   container.innerHTML = "";
   
-  const startMidi = (pianoOctave * 12) + 12; // e.g. pianoOctave=3 => 48 (C3)
-  const endMidi = startMidi + 36; // 3 octaves => 84 (C6)
+  let startMidi;
+  if (pianoKeyRange === 'F') {
+    startMidi = (pianoOctave * 12) + 17; // F3 (pianoOctave=3 => 53)
+  } else {
+    startMidi = (pianoOctave * 12) + 12; // C3 (pianoOctave=3 => 48)
+  }
+  const endMidi = startMidi + 36; // 3 octaves
   
   let whiteKeyCount = 0;
   
@@ -1554,16 +1567,35 @@ function setupPianoKeyboard() {
     });
   }
   
-  // Octave shifter
+  // Octave & Range Shifter
   const octDown = document.getElementById("btn-piano-octave-down");
   const octUp = document.getElementById("btn-piano-octave-up");
   const octDisplay = document.getElementById("piano-octave-display");
+  const rangeSel = document.getElementById("sel-piano-range");
+  
+  function updateOctaveDisplay() {
+    if (octDisplay) {
+      if (pianoKeyRange === 'F') {
+        octDisplay.innerText = `F${pianoOctave} - F${pianoOctave + 3}`;
+      } else {
+        octDisplay.innerText = `C${pianoOctave} - C${pianoOctave + 3}`;
+      }
+    }
+  }
+  
+  if (rangeSel) {
+    rangeSel.addEventListener("change", (e) => {
+      pianoKeyRange = e.target.value;
+      updateOctaveDisplay();
+      renderPianoKeyboard();
+    });
+  }
   
   if (octDown) {
     octDown.addEventListener("click", () => {
       if (pianoOctave > 1) {
         pianoOctave--;
-        octDisplay.innerText = `C${pianoOctave} - C${pianoOctave + 3}`;
+        updateOctaveDisplay();
         renderPianoKeyboard();
       }
     });
@@ -1573,7 +1605,7 @@ function setupPianoKeyboard() {
     octUp.addEventListener("click", () => {
       if (pianoOctave < 5) {
         pianoOctave++;
-        octDisplay.innerText = `C${pianoOctave} - C${pianoOctave + 3}`;
+        updateOctaveDisplay();
         renderPianoKeyboard();
       }
     });

@@ -253,9 +253,17 @@
               <span class="toggle-label">PCキーで演奏</span>
             </label>
             
+            <div class="piano-range-control">
+              <span class="range-label">音域:</span>
+              <select id="sel-piano-range" class="piano-select" title="ピアノの基準音域を切り替えます">
+                <option value="F" selected>F - F (ファ〜ファ)</option>
+                <option value="C">C - C (ド〜ド)</option>
+              </select>
+            </div>
+            
             <div class="piano-octave-control">
               <button id="btn-piano-octave-down" class="octave-btn" title="オクターブ下げる">-</button>
-              <span id="piano-octave-display" class="octave-display">C3 - C6</span>
+              <span id="piano-octave-display" class="octave-display">F3 - F6</span>
               <button id="btn-piano-octave-up" class="octave-btn" title="オクターブ上げる">+</button>
             </div>
             

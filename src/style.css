@@ -1671,3 +1671,54 @@ body.light-theme .white-key.key-active .key-label {
 body.light-theme .black-key.key-active {
   background: linear-gradient(to bottom, #818cf8 0%, var(--accent-primary) 100%);
 }
+
+.piano-range-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.range-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.piano-select {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.piano-select:hover {
+  border-color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.piano-select option {
+  background-color: var(--bg-panel);
+  color: var(--text-main);
+}
+
+body.light-theme .piano-select {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: #cbd5e1;
+  color: var(--text-main);
+}
+
+body.light-theme .piano-select:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .piano-select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
