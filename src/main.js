@@ -576,11 +576,19 @@ function renderScoreList() {
 }
 
 function switchActiveFile(id) {
-  // If playing, pause first
-  if (isPlaying && synthControl) {
-    const pauseBtn = document.querySelector(".abcjs-midi-pause");
-    if (pauseBtn) pauseBtn.click();
+  // Stop and disable the audio instantly to prevent old audio from playing
+  if (synthControl) {
+    try {
+      synthControl.stop();
+      synthControl.disable(true);
+    } catch (e) {
+      console.warn("Error stopping synth during file switch: ", e);
+    }
+    synthControl = null;
   }
+  isPlaying = false;
+  document.getElementById("playback-status").innerText = "停止";
+  clearNoteHighlights();
   
   activeFileId = id;
   localStorage.setItem('abc_editor_active_id', id);
@@ -1127,6 +1135,20 @@ function setupTemplateLoaders() {
     btn.addEventListener("click", () => {
       const templateName = btn.dataset.template;
       if (templates[templateName]) {
+        // Stop playing instantly before showing confirm dialog
+        if (synthControl) {
+          try {
+            synthControl.stop();
+            synthControl.disable(true);
+          } catch (e) {
+            console.warn("Error stopping synth on template load:", e);
+          }
+          synthControl = null;
+        }
+        isPlaying = false;
+        document.getElementById("playback-status").innerText = "停止";
+        clearNoteHighlights();
+
         if (confirm("現在のエディター内容を上書きして、このサンプルをロードしてもよろしいですか？")) {
           if (editorInstance) {
             editorInstance.setValue(templates[templateName]);
